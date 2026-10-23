@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+import sys
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
@@ -38,7 +40,7 @@ class LLMClient:
 
         if self.provider == "gemini":
             self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-            self.model = model or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+            self.model = model or os.getenv("GEMINI_MODEL") or "gemini-flash-latest"
             self.base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
         elif self.provider == "groq":
             self.api_key = api_key or os.getenv("GROQ_API_KEY")
@@ -98,7 +100,23 @@ class LLMClient:
             kwargs["tools"] = formatted_tools
             kwargs["tool_choice"] = "auto"
 
-        response = self.client.chat.completions.create(**kwargs)
+        # Resilient execution with exponential backoff for rate limits or server spikes
+        max_retries = 4
+        response = None
+        for attempt in range(max_retries):
+            try:
+                response = self.client.chat.completions.create(**kwargs)
+                break
+            except Exception as e:
+                err_msg = str(e)
+                is_transient = any(code in err_msg for code in ("503", "429", "timeout", "unavailable", "rate"))
+                if is_transient and attempt < max_retries - 1:
+                    sleep_time = (2 ** attempt) * 2
+                    sys.stderr.write(f"[*] Transient API rate/demand spike ({err_msg[:60]}...). Retrying in {sleep_time}s...\n")
+                    time.sleep(sleep_time)
+                else:
+                    raise
+
         choice = response.choices[0]
         message = choice.message
 

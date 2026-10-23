@@ -108,7 +108,7 @@ Open `.env` in any text editor and supply your API key:
      ```env
      LLM_PROVIDER=gemini
      GEMINI_API_KEY=AIzaSy...your_actual_key_here...
-     GEMINI_MODEL=gemini-2.5-flash
+     GEMINI_MODEL=gemini-flash-latest
      ```
 
 *(Alternative providers such as Groq or OpenAI are also supported by setting `LLM_PROVIDER=groq` or `LLM_PROVIDER=openai`.)*
