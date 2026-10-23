@@ -1,0 +1,65 @@
+{
+  "repository": "https://github.com/example/vulnerable-devops-demo",
+  "violations": [
+    {
+      "rule_id": "SEC-001",
+      "category": "security",
+      "severity": "critical",
+      "file": "server/config.py",
+      "line": 14,
+      "description": "Hardcoded production API secret credential",
+      "evidence": "Variable STRIPE_API_KEY assigned plaintext key 'sk-live-***REDACTED***'",
+      "recommendation": "Remove credential immediately, revoke key from Stripe console, and load via environment variable or secret manager."
+    },
+    {
+      "rule_id": "CI-002",
+      "category": "github actions / ci",
+      "severity": "high",
+      "file": ".github/workflows/ci.yml",
+      "line": 28,
+      "description": "Permissive workflow security permissions with write-all access",
+      "evidence": "Workflow root declares 'permissions: write-all'",
+      "recommendation": "Follow the principle of least privilege by specifying explicit granular permissions (e.g., contents: read, pull-requests: write)."
+    },
+    {
+      "rule_id": "DEP-002",
+      "category": "dependency management",
+      "severity": "medium",
+      "file": "requirements.txt",
+      "line": 4,
+      "description": "Unpinned production dependencies without version bounds",
+      "evidence": "Dependencies 'flask', 'requests', and 'sqlalchemy' listed without version constraints or lockfile",
+      "recommendation": "Pin dependency versions with compatible release operators (e.g., flask>=3.0,<4.0) or adopt pip-tools / poetry.lock to prevent supply chain breaks."
+    },
+    {
+      "rule_id": "CONF-002",
+      "category": "configuration",
+      "severity": "medium",
+      "file": "scripts/deploy.sh",
+      "line": 8,
+      "description": "Hardcoded host-specific absolute filesystem path",
+      "evidence": "Deployment script references absolute path '/home/ubuntu/app/build'",
+      "recommendation": "Use relative paths or environment variables like '$APP_DIR' to ensure portable, environment-independent execution."
+    },
+    {
+      "rule_id": "QUAL-001",
+      "category": "code quality",
+      "severity": "medium",
+      "file": null,
+      "line": null,
+      "description": "Absence of automated code quality and linting configuration",
+      "evidence": "Repository contains no configuration files for Ruff, Flake8, Black, ESLint, or pyproject.toml linter tables",
+      "recommendation": "Add a configuration file such as ruff.toml or configure ruff/black inside pyproject.toml to enforce code style consistency."
+    },
+    {
+      "rule_id": "HYG-002",
+      "category": "repository hygiene",
+      "severity": "low",
+      "file": ".gitignore",
+      "line": null,
+      "description": "Incomplete .gitignore missing Python cache and environment exclusions",
+      "evidence": ".gitignore omits .env files, __pycache__, and build distribution directories",
+      "recommendation": "Adopt standard GitHub Python gitignore template to prevent accidental commit of cache artifacts and local secrets."
+    }
+  ]
+}
